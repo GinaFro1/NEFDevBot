@@ -29,7 +29,7 @@ app.get("/networth", async (req, res) => {
   const channel = await client.channels.fetch(process.env.CHANNEL_ID);
   if (!channel) return res.status(404).send("Channel not found");
 
-  await channel.send(`/networth ${player}`);
+  await channel.send(`nefonly!networth ${player}`);
 
   for (let i = 0; i < 10; i++) {
     if (
