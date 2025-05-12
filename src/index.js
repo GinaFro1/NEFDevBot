@@ -1,27 +1,32 @@
-const { Client } = require("discord.js-selfbot");
+const { Client, GatewayIntentBits,EmbedBuilder } = require('discord.js');
 const express = require("express");
 require("dotenv").config();
 
 const app = express();
 const port = 3000;
 
-const client = new Client();
-
-// Keep track of the last embed message
-let lastEmbed = null;
-
-// Listen for new messages (from your Discord client as a selfbot)
-client.on("message", (msg) => {
-  // Check if the message contains an embed (and is from a bot)
-  if (msg.author.bot && msg.embeds.length > 0) {
-    lastEmbed = msg.embeds[0]; // Store the embed
-  }
-  if (!msg.author.bot && msg.content.startsWith("!checkBot")) {
-    msg.reply("I am working and online!");
-  }
+const client = new Client({
+	intents: [
+		GatewayIntentBits.Guilds,
+		GatewayIntentBits.GuildMessages,
+		GatewayIntentBits.MessageContent,
+		GatewayIntentBits.GuildMembers,
+	],
 });
 
-// Endpoint to get the net worth of a player
+let lastEmbed = null;
+
+client.on("messageCreate", (msg) => {
+  if (!msg.author.bot && msg.content == "nef!botstatus"){
+    const embed = new EmbedBuilder().setTitle("Bot Status").setDescription("Espress Server: Online\nBot : Online")
+   msg.reply({ embeds: [embed] });
+  }
+  if (msg.author.bot && msg.embeds.length > 0) {
+    lastEmbed = msg.embeds[0]; 
+  }
+  
+});
+
 app.get("/networth", async (req, res) => {
   const player = req.query.player;
   if (!player) return res.status(400).send("Missing player parameter");
@@ -42,7 +47,6 @@ app.get("/networth", async (req, res) => {
     await new Promise((r) => setTimeout(r, 500));
   }
 
-  // Validate that embed is found *and* matches the player
   if (
     !lastEmbed ||
     !lastEmbed.title ||
@@ -65,10 +69,8 @@ app.get("/networth", async (req, res) => {
   res.json(data);
 });
 
-// Login using the user's token
 client.login(process.env.TOKEN);
 
-// Start the server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
